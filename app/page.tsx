@@ -3,10 +3,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Heart, Users, Zap, Calendar, ArrowRight, Star, Navigation } from "lucide-react"
 import Footer from "@/components/footer"
+import { SignUp } from "@clerk/nextjs"
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      {/* Header */}
+      <SignUp />
+
+
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white">

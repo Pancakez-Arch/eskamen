@@ -45,7 +45,6 @@ export default function SignInPage() {
                 footerActionLink: "text-primary-600 hover:text-primary-700",
               },
             }}
-            redirectUrl="/sessions"
           />
         </div>
 
