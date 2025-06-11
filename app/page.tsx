@@ -1,22 +1,18 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Heart, Users, Zap, Calendar, ArrowRight, Star, Navigation } from "lucide-react"
+import { Heart, Users, Zap, Calendar, ArrowRight, Star} from "lucide-react"
 import Footer from "@/components/footer"
-import { SignUp } from "@clerk/nextjs"
-
+import Navigation from "../components/navgiation"
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <SignUp />
 
-
-
+      <Navigation />
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative container py-24 md:py-32">
+        <div className="relative container mx-auto px-4 py-24 md:py-32">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <h1 className="text-4xl md:text-6xl font-bold leading-tight">
               Velkommen til <span className="text-blue-200">Treningsglede</span>
@@ -98,7 +94,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <section className="py-20 bg-blue-50">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Hvorfor Velge Treningsglede?</h2>
@@ -159,7 +155,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-        <div className="container text-center space-y-8">
+        <div className="container mx-auto px-4 text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold">Klar for å Starte Din Treningsreise?</h2>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">
             Bli med i vårt fellesskap og opplev gleden ved å være aktiv. Din første økt er bare et klikk unna!

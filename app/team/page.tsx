@@ -55,7 +55,7 @@ export default function TeamPage() {
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
-        <div className="container text-center space-y-6">
+        <div className="container mx-auto px-4 text-center space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold">Møt Vårt Team</h1>
           <p className="text-xl text-blue-100 max-w-3xl mx-auto">
             Vi er en gruppe lidenskapelige trenere og veiledere som brenner for å hjelpe deg med å nå dine helse- og
@@ -66,7 +66,7 @@ export default function TeamPage() {
 
       {/* Team Grid */}
       <section className="py-20 bg-white">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {teamMembers.map((member, index) => (
               <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -104,7 +104,7 @@ export default function TeamPage() {
 
       {/* Values Section */}
       <section className="py-20 bg-blue-50">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-12">
             <div className="space-y-4">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Våre Verdier</h2>

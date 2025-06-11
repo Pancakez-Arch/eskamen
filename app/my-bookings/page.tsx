@@ -82,7 +82,7 @@ export default function MyBookingsPage() {
     return (
       <div className="min-h-screen">
         <Navigation />
-        <div className="container py-20 text-center">
+        <div className="container mx-auto px-4 py-20 text-center">
           <h1 className="text-3xl font-bold mb-4">Mine Bookinger</h1>
           <p className="text-gray-600">Du må være logget inn for å se dine bookinger.</p>
         </div>
@@ -108,7 +108,7 @@ export default function MyBookingsPage() {
       <Navigation />
 
       <section className="py-20 bg-white">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Mine Bookinger</h1>
