@@ -1,7 +1,7 @@
 // /pages/api/signup.ts
 import { NextRequest } from "next/server";
 import bcrypt from "bcrypt";
-import { db } from "@/lib/db";
+import { db, executeQuery, queryRow, queryRows } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();

@@ -1,41 +1,33 @@
--- sessions table
-CREATE TABLE sessions (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  instructor_id INT NOT NULL,
-  session_type VARCHAR(100),
-  session_date DATE NOT NULL,
-  start_time TIME NOT NULL,
-  end_time TIME NOT NULL,
-  location VARCHAR(255),
-  max_participants INT DEFAULT 0,
-  current_participants INT DEFAULT 0,
-  difficulty VARCHAR(50),
-  price DECIMAL(10,2) DEFAULT 0.00,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (instructor_id) REFERENCES instructors(id)
+-- 1. Lage database
+CREATE DATABASE IF NOT EXISTS TreningsGlede;
+
+-- 2. Lage ny bruker
+CREATE USER IF NOT EXISTS 'treningsuser'@'%' IDENTIFIED BY 'userpassword123';
+
+-- 3. Gi tilgang til databasen
+GRANT ALL PRIVILEGES ON TreningsGlede.* TO 'treningsuser'@'%';
+
+-- 4. Aktivere endringene
+FLUSH PRIVILEGES;
+
+-- 5. Bruke databasen
+USE TreningsGlede;
+
+-- 6. Lage users-tabellen
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- instructors table
-CREATE TABLE instructors (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  role VARCHAR(100),
-  email VARCHAR(255) UNIQUE,
-  bio TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
-  role VARCHAR(50) DEFAULT 'user',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- 7. Lage sessions-tabellen
+CREATE TABLE IF NOT EXISTS sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(512) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

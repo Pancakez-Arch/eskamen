@@ -1,5 +1,5 @@
+import { queryRows } from "@/lib/db";
 import { NextResponse } from "next/server"
-import { queryRows } from "@/lib/db"
 
 // Define a type for session rows
 interface SessionRow {

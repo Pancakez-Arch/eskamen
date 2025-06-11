@@ -1,19 +1,18 @@
-import mysql from "mysql2/promise";
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
 
-// Create connection pool for better performance
+dotenv.config();
+
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  port: Number.parseInt(process.env.DB_PORT || "3307"),
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "adiam",
-  database: process.env.DB_NAME || "trening",
+  host: 'localhost',
+  user: 'treningsuser',
+  password: 'userpassword123',
+  database: 'TreningsGlede',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  timezone: "+00:00",
-})
+});
 
-export { pool as db }
 
 // Helper function to execute queries
 export async function executeQuery<T = unknown>(query: string, params: unknown[] = []): Promise<T> {
@@ -36,3 +35,5 @@ export async function queryRow<T = unknown>(query: string, params: unknown[] = [
 export async function queryRows<T = unknown>(query: string, params: unknown[] = []): Promise<T[]> {
   return (await executeQuery<T[]>(query, params));
 }
+
+export { pool as db };

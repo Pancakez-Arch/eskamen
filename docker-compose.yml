@@ -1,19 +1,18 @@
 version: '3.8'
-
 services:
-  mysql:
+  db:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: adiam
-      MYSQL_DATABASE: trening
-      MYSQL_USER: root
-      MYSQL_PASSWORD: adiam
-    command: --default-authentication-plugin=mysql_native_password
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: TreningsGlede
+      MYSQL_USER: treningsuser
+      MYSQL_PASSWORD: userpassword123
     ports:
-      - "3307:3307"
+      - '3306:3306'
     volumes:
-      - mysql-data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+      - ./scripts/table.sql:/docker-entrypoint-initdb.d/table.sql:ro
 
 volumes:
-  mysql-data:
+  db_data:
