@@ -1,9 +1,19 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { queryRows } from "@/lib/db"
 
-export async function GET(request: NextRequest) {
+// Move Instructor type to module scope for reuse and clarity
+type Instructor = {
+  id: number
+  name: string
+  role: string
+  bio: string
+  specialties: string | string[]
+  image_url: string
+}
+
+export async function GET() {
   try {
-    const instructors = await queryRows(`
+    const instructors = await queryRows<Instructor>(`
       SELECT id, name, role, bio, specialties, image_url
       FROM instructors
       WHERE is_active = TRUE
@@ -11,7 +21,7 @@ export async function GET(request: NextRequest) {
     `)
 
     // Parse JSON specialties
-    const formattedInstructors = instructors.map((instructor: any) => ({
+    const formattedInstructors = instructors.map((instructor) => ({
       ...instructor,
       specialties:
         typeof instructor.specialties === "string" ? JSON.parse(instructor.specialties) : instructor.specialties,

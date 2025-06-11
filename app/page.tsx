@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Heart, Users, Zap, Calendar, ArrowRight, Star} from "lucide-react"
 import Footer from "@/components/footer"
 import Navigation from "../components/navgiation"
+import Image from "next/image"
+
 export default function HomePage() {
   return (
     <div className="min-h-screen">
@@ -141,10 +143,14 @@ export default function HomePage() {
               </div>
 
               <div className="relative">
-                <img
+                <Image
                   src="https://www.3t.no/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Ftttno-prod-assets%2Faktiviteter_header_mobil_3t_olympia_7652c587bf%2Faktiviteter_header_mobil_3t_olympia_7652c587bf.jpg&w=1920&q=75"
                   alt="Treningsgruppe utendørs"
                   className="rounded-lg shadow-xl w-full"
+                  width={1920}
+                  height={1080}
+                  style={{objectFit: 'cover'}}
+                  priority
                 />
                 <div className="absolute inset-0 bg-blue-600/10 rounded-lg"></div>
               </div>

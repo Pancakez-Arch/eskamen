@@ -1,34 +1,30 @@
 // /pages/api/signup.ts
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest } from "next/server";
 import bcrypt from "bcrypt";
-import mysql from "mysql2/promise";
+import { db } from "@/lib/db";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end();
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { username, password } = body;
 
-  const { username, password } = req.body;
-
-  if (!username || !password) return res.status(400).json({ message: "Missing username or password" });
+  if (!username || !password) {
+    return new Response(JSON.stringify({ message: "Missing username or password" }), { status: 400 });
+  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const db = await mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'yourpassword',
-    database: 'TreningsGlede'
-  });
-
   try {
-    await db.execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
-    res.status(201).json({ message: 'User created successfully' });
-  } catch (error: any) {
-    if (error.code === 'ER_DUP_ENTRY') {
-      res.status(400).json({ message: 'Username already exists' });
+    await db.execute(
+      'INSERT INTO users (username, password_hash) VALUES (?, ?)',
+      [username, hashedPassword]
+    );
+    return new Response(JSON.stringify({ message: 'User created successfully' }), { status: 201 });
+  } catch (error) {
+    // Use type guard for error with code property
+    if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === 'ER_DUP_ENTRY') {
+      return new Response(JSON.stringify({ message: 'Username already exists' }), { status: 400 });
     } else {
-      res.status(500).json({ message: 'Something went wrong' });
+      return new Response(JSON.stringify({ message: 'Something went wrong' }), { status: 500 });
     }
-  } finally {
-    await db.end();
   }
 }

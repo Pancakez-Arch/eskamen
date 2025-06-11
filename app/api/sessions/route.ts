@@ -1,9 +1,27 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { queryRows } from "@/lib/db"
 
-export async function GET(request: NextRequest) {
+// Define a type for session rows
+interface SessionRow {
+  id: number;
+  title: string;
+  description: string;
+  instructor_name: string;
+  instructor_role: string;
+  session_type: string;
+  session_date: string;
+  start_time: string;
+  end_time: string;
+  location: string;
+  max_participants: number;
+  current_participants: number;
+  difficulty: string;
+  price: string | number;
+}
+
+export async function GET() {
   try {
-    const sessions = await queryRows(`
+    const sessions = await queryRows<SessionRow>(`
       SELECT 
         s.*,
         i.name as instructor_name,
@@ -15,7 +33,7 @@ export async function GET(request: NextRequest) {
     `)
 
     // Format the sessions data
-    const formattedSessions = sessions.map((session: any) => ({
+    const formattedSessions = sessions.map((session) => ({
       id: session.id,
       title: session.title,
       description: session.description,
@@ -29,7 +47,7 @@ export async function GET(request: NextRequest) {
       maxParticipants: session.max_participants,
       currentParticipants: session.current_participants,
       difficulty: session.difficulty,
-      price: Number.parseFloat(session.price),
+      price: typeof session.price === 'string' ? Number.parseFloat(session.price) : session.price,
     }))
 
     return NextResponse.json(formattedSessions)

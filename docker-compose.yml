@@ -5,9 +5,9 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: adiam123
-      MYSQL_DATABASE: treningsglede
-      MYSQL_USER: admin
+      MYSQL_ROOT_PASSWORD: adiam
+      MYSQL_DATABASE: trening
+      MYSQL_USER: root
       MYSQL_PASSWORD: adiam
     command: --default-authentication-plugin=mysql_native_password
     ports:
