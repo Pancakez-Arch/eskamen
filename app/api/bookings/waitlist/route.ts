@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
 
     // Check if user already on waitlist or has booking
     const existingEntry = await queryRow(
-      `SELECT * FROM waitlist WHERE clerk_user_id = ? AND session_id = ?
+      `SELECT * FROM waitlist WHERE user_id = ? AND session_id = ?
        UNION
-       SELECT clerk_user_id, session_id, 'booking' as type, id FROM bookings 
-       WHERE clerk_user_id = ? AND session_id = ? AND booking_status != 'cancelled'`,
+       SELECT user_id, session_id, 'booking' as type, id FROM bookings 
+       WHERE user_id = ? AND session_id = ? AND booking_status != 'cancelled'`,
       [userId, sessionId, userId, sessionId],
     )
 
@@ -40,11 +40,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get next position in waitlist
-    const lastPosition = await queryRow("SELECT MAX(position) as max_position FROM waitlist WHERE session_id = ?", [
-      sessionId,
-    ])
+    type MaxPositionResult = { max_position: number | null }
+    const lastPosition = await queryRow<MaxPositionResult>(
+      "SELECT MAX(position) as max_position FROM waitlist WHERE session_id = ?",
+      [sessionId],
+    )
 
-    const nextPosition = (lastPosition?.max_position || 0) + 1
+    const nextPosition = ((lastPosition && lastPosition.max_position) || 0) + 1
 
     // Add to waitlist
     await executeQuery("INSERT INTO waitlist (clerk_user_id, session_id, position) VALUES (?, ?, ?)", [
