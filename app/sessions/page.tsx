@@ -36,6 +36,16 @@ interface Session {
   price: number
 }
 
+interface Exercise {
+  id: number;
+  session_id: number;
+  name: string;
+  description: string;
+  sets: number | null;
+  reps: number | null;
+  duration_minutes: number | null;
+}
+
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
@@ -46,10 +56,19 @@ export default function SessionsPage() {
     phone: "",
     notes: "",
   })
+  const [exercises, setExercises] = useState<Exercise[]>([])
 
   useEffect(() => {
     fetchSessions()
   }, [])
+
+  useEffect(() => {
+    if (selectedSession) {
+      fetchExercises(selectedSession.id);
+    } else {
+      setExercises([]);
+    }
+  }, [selectedSession])
 
   const fetchSessions = async () => {
     try {
@@ -62,6 +81,18 @@ export default function SessionsPage() {
       console.error("Error fetching sessions:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchExercises = async (sessionId: number) => {
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/exercises`);
+      if (response.ok) {
+        const data = await response.json();
+        setExercises(data);
+      }
+    } catch (error) {
+      console.error("Error fetching exercises:", error);
     }
   }
 
@@ -183,6 +214,27 @@ export default function SessionsPage() {
 
                   <CardContent className="space-y-4">
                     <p className="text-sm text-gray-600">{session.description}</p>
+                    {selectedSession && selectedSession.id === session.id && exercises.length > 0 && (
+                      <div className="mt-2">
+                        <h4 className="font-semibold text-blue-700 mb-2">Øvelser i denne økten:</h4>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {exercises.map((ex) => (
+                            <li key={ex.id}>
+                              <span className="font-medium">{ex.name}</span>
+                              {ex.sets && ex.reps && (
+                                <>: {ex.sets} x {ex.reps} reps</>
+                              )}
+                              {ex.duration_minutes && (
+                                <>: {ex.duration_minutes} min</>
+                              )}
+                              {ex.description && (
+                                <span className="text-gray-500"> – {ex.description}</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center space-x-2">

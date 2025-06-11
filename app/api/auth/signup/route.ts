@@ -1,7 +1,7 @@
 // /pages/api/signup.ts
+import { db } from "@/lib/db";
 import { NextRequest } from "next/server";
 import bcrypt from "bcrypt";
-import { db, executeQuery, queryRow, queryRows } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -20,11 +20,6 @@ export async function POST(req: NextRequest) {
     );
     return new Response(JSON.stringify({ message: 'User created successfully' }), { status: 201 });
   } catch (error) {
-    // Use type guard for error with code property
-    if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === 'ER_DUP_ENTRY') {
-      return new Response(JSON.stringify({ message: 'Username already exists' }), { status: 400 });
-    } else {
-      return new Response(JSON.stringify({ message: 'Something went wrong' }), { status: 500 });
-    }
+    return new Response(JSON.stringify({ message: 'Something went wrong' }), { status: 500 });
   }
 }
