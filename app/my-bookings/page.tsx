@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@clerk/nextjs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge, Calendar, Clock, MapPin } from "lucide-react"
@@ -25,13 +24,10 @@ interface Booking {
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const { isSignedIn } = useAuth()
 
   useEffect(() => {
-    if (isSignedIn) {
-      fetchBookings()
-    }
-  }, [isSignedIn])
+    fetchBookings()
+  }, [])
 
   const fetchBookings = async () => {
     try {
@@ -75,19 +71,6 @@ export default function MyBookingsPage() {
       default:
         return status
     }
-  }
-
-  if (!isSignedIn) {
-    return (
-      <div className="min-h-screen">
-        <Navigation />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold mb-4">Mine Bookinger</h1>
-          <p className="text-gray-600">Du må være logget inn for å se dine bookinger.</p>
-        </div>
-        <Footer />
-      </div>
-    )
   }
 
   if (loading) {

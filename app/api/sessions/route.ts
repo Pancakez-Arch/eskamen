@@ -4,12 +4,15 @@ import { NextResponse } from "next/server";
 async function fetchSessions() {
   return db.query(`
     SELECT 
-      s.*, 
-      s.instructor_id, 
-      i.name as instructor_name,
-      i.role as instructor_role
-    FROM sessions s
-    JOIN instructors i ON s.instructor_id = i.id
+      id,
+      session_date,
+      title,
+      user_id,
+      token,
+      expires_at,
+      created_at
+    FROM sessions
+    ORDER BY session_date ASC
   `);
 }
 

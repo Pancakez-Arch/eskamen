@@ -1,74 +1,29 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Clock, MapPin, Users, Star, TreePine, Home } from 'lucide-react'
 import Navigation from "@/components/navgiation"
 import Footer from "@/components/footer"
-import { Input } from "@/components/ui/input"
+import { Star, Users, Calendar } from 'lucide-react'
+import SessionCard from "@/components/session-card"
 
 interface Session {
-  id: number
-  title: string
-  instructor: string
-  instructorRole: string
-  type: "indoor" | "outdoor"
-  date: string
-  startTime: string
-  endTime: string
-  location: string
-  maxParticipants: number
-  currentParticipants: number
-  difficulty: string
-  description: string
-  price: number
-}
-
-interface Exercise {
   id: number;
-  session_id: number;
-  name: string;
-  description: string;
-  sets: number | null;
-  reps: number | null;
-  duration_minutes: number | null;
+  session_date: string;
+  title: string;
+  user_id: number;
+  token: string;
+  expires_at: string;
+  created_at: string;
 }
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([])
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [bookingForm, setBookingForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    notes: "",
-  })
-  const [exercises, setExercises] = useState<Exercise[]>([])
 
   useEffect(() => {
     fetchSessions()
   }, [])
-
-  useEffect(() => {
-    if (selectedSession) {
-      fetchExercises(selectedSession.id);
-    } else {
-      setExercises([]);
-    }
-  }, [selectedSession])
 
   const fetchSessions = async () => {
     try {
@@ -82,75 +37,6 @@ export default function SessionsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const fetchExercises = async (sessionId: number) => {
-    try {
-      const response = await fetch(`/api/sessions/${sessionId}/exercises`);
-      if (response.ok) {
-        const data = await response.json();
-        setExercises(data);
-      }
-    } catch (error) {
-      console.error("Error fetching exercises:", error);
-    }
-  }
-
-  const handleBooking = (session: Session) => {
-    setSelectedSession(session)
-  }
-
-  const handleWaitlist = async (session: Session) => {
-    const name = prompt("Skriv inn ditt navn for ventelisten:")
-    const email = prompt("Skriv inn din e-post:")
-    
-    if (name && email) {
-      alert(`${name} er nå på ventelisten for "${session.title}". Vi sender deg en e-post til ${email} hvis det blir ledig plass.`)
-    }
-  }
-
-  const submitBooking = async () => {
-    if (!selectedSession) return
-
-    // Validering
-    if (!bookingForm.name || !bookingForm.email || !bookingForm.phone) {
-      alert("Vennligst fyll ut alle obligatoriske felt")
-      return
-    }
-
-    // Simuler booking (i ekte app ville dette sendt til backend)
-    alert(`Booking bekreftet for "${selectedSession.title}"!\n\nDetaljer:\nNavn: ${bookingForm.name}\nE-post: ${bookingForm.email}\nTelefon: ${bookingForm.phone}\n\nDu vil motta en bekreftelse på e-post.`)
-    
-    setSelectedSession(null)
-    setBookingForm({ name: "", email: "", phone: "", notes: "" })
-    
-    // Oppdater deltakerantall lokalt
-    setSessions(sessions.map(s => 
-      s.id === selectedSession.id 
-        ? { ...s, currentParticipants: s.currentParticipants + 1 }
-        : s
-    ))
-  }
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
-      case "beginner":
-        return "bg-green-100 text-green-800"
-      case "intermediate":
-        return "bg-yellow-100 text-yellow-800"
-      case "advanced":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-blue-100 text-blue-800"
-    }
-  }
-
-  const spotsLeft = (session: Session) => {
-    return session.maxParticipants - session.currentParticipants
-  }
-
-  const formatTime = (timeString: string) => {
-    return timeString.slice(0, 5)
   }
 
   if (loading) {
@@ -194,163 +80,7 @@ export default function SessionsPage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sessions.map((session) => (
-                <Card key={session.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg">{session.title}</CardTitle>
-                        <p className="text-sm text-gray-600">med {session.instructor}</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {session.type === "outdoor" ? (
-                          <TreePine className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <Home className="h-5 w-5 text-blue-600" />
-                        )}
-                        <Badge className={getDifficultyColor(session.difficulty)}>{session.difficulty}</Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600">{session.description}</p>
-                    {selectedSession && selectedSession.id === session.id && exercises.length > 0 && (
-                      <div className="mt-2">
-                        <h4 className="font-semibold text-blue-700 mb-2">Øvelser i denne økten:</h4>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {exercises.map((ex) => (
-                            <li key={ex.id}>
-                              <span className="font-medium">{ex.name}</span>
-                              {ex.sets && ex.reps && (
-                                <>: {ex.sets} x {ex.reps} reps</>
-                              )}
-                              {ex.duration_minutes && (
-                                <>: {ex.duration_minutes} min</>
-                              )}
-                              {ex.description && (
-                                <span className="text-gray-500"> – {ex.description}</span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        <span>{new Date(session.date).toLocaleDateString("no-NO")}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <span>
-                          {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span>{session.location}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-gray-500" />
-                        <span>
-                          {session.currentParticipants}/{session.maxParticipants} deltakere
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <span className="text-lg font-bold text-blue-600">{session.price} kr</span>
-                      <div className="space-x-2">
-                        {spotsLeft(session) > 0 ? (
-                          <>
-                            <Badge variant="outline" className="text-green-600 border-green-600">
-                              {spotsLeft(session)} plasser igjen
-                            </Badge>
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  className="bg-blue-600 hover:bg-blue-700"
-                                  onClick={() => handleBooking(session)}
-                                >
-                                  Book nå
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="sm:max-w-md">
-                                <DialogHeader>
-                                  <DialogTitle>Book {selectedSession?.title}</DialogTitle>
-                                  <DialogDescription>
-                                    Fyll ut informasjonen under for å booke {selectedSession?.title} den{" "}
-                                    {selectedSession && new Date(selectedSession.date).toLocaleDateString("no-NO")}{" "}
-                                    kl. {selectedSession && formatTime(selectedSession.startTime)}.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div className="space-y-2">
-                                    <Label htmlFor="name">Navn *</Label>
-                                    <Input
-                                      id="name"
-                                      value={bookingForm.name}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
-                                      placeholder="Ditt fulle navn"
-                                      required
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="email">E-post *</Label>
-                                    <Input
-                                      id="email"
-                                      type="email"
-                                      value={bookingForm.email}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
-                                      placeholder="din@epost.no"
-                                      required
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="phone">Telefon *</Label>
-                                    <Input
-                                      id="phone"
-                                      value={bookingForm.phone}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
-                                      placeholder="+47 123 45 678"
-                                      required
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="notes">Kommentarer (valgfritt)</Label>
-                                    <Textarea
-                                      id="notes"
-                                      value={bookingForm.notes}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                                      placeholder="Spesielle behov eller kommentarer..."
-                                    />
-                                  </div>
-                                  <Button
-                                    onClick={submitBooking}
-                                    className="w-full bg-blue-600 hover:bg-blue-700"
-                                  >
-                                    Bekreft booking
-                                  </Button>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                          </>
-                        ) : (
-                          <>
-                            <Badge variant="outline" className="text-red-600 border-red-600">
-                              Fullt
-                            </Badge>
-                            <Button size="sm" variant="outline" onClick={() => handleWaitlist(session)}>
-                              Venteliste
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <SessionCard key={session.id} title={session.title} date={session.session_date} />
               ))}
             </div>
           )}

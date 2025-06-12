@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useAuth, useUser, SignInButton, UserButton } from "@clerk/nextjs"
 import { Menu, Dumbbell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -11,17 +10,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
-  const { isSignedIn } = useAuth()
-  const { user } = useUser()
 
   const navItems = [
     { href: "/", label: "Hjem" },
     { href: "/team", label: "Vårt Team" },
     { href: "/sessions", label: "Treningsøkter" },
+    { href: "/login", label: "Logg inn" }, // Placeholder for login
+    { href: "/logout", label: "Logg ut" }, // Placeholder for logout
   ]
-
-  // Add "Mine Bookinger" for signed-in users
-  const userNavItems = isSignedIn ? [...navItems, { href: "/my-bookings", label: "Mine Bookinger" }] : navItems
 
   const isActive = (href: string) => pathname === href
 
@@ -35,7 +31,7 @@ export default function Navigation() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          {userNavItems.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -49,30 +45,11 @@ export default function Navigation() {
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          {isSignedIn ? (
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Hei, {user?.firstName}!</span>
-              <UserButton afterSignOutUrl="/" />
-              <Link href="/sessions">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  Book økt
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <SignInButton mode="modal">
-                <Button variant="outline" size="sm">
-                  Logg inn
-                </Button>
-              </SignInButton>
-              <Link href="/sessions">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  Book økt
-                </Button>
-              </Link>
-            </div>
-          )}
+          <Link href="/sessions">
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+              Book økt
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile Navigation */}
@@ -85,7 +62,7 @@ export default function Navigation() {
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px] sm:w-[400px]">
             <div className="flex flex-col space-y-4 mt-8">
-              {userNavItems.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -98,28 +75,9 @@ export default function Navigation() {
                 </Link>
               ))}
               <div className="pt-4 space-y-2">
-                {isSignedIn ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 p-2">
-                      <UserButton afterSignOutUrl="/" />
-                      <span className="text-sm">Hei, {user?.firstName}!</span>
-                    </div>
-                    <Link href="/sessions" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">Book økt</Button>
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <SignInButton mode="modal">
-                      <Button variant="outline" className="w-full">
-                        Logg inn
-                      </Button>
-                    </SignInButton>
-                    <Link href="/sessions" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">Book økt</Button>
-                    </Link>
-                  </div>
-                )}
+                <Link href="/sessions" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">Book økt</Button>
+                </Link>
               </div>
             </div>
           </SheetContent>
