@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, Dumbbell } from "lucide-react"
+import { Menu, Dumbbell, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
@@ -15,18 +15,16 @@ export default function Navigation() {
     { href: "/", label: "Hjem" },
     { href: "/team", label: "Vårt Team" },
     { href: "/sessions", label: "Treningsøkter" },
-    { href: "/login", label: "Logg inn" }, // Placeholder for login
-    { href: "/logout", label: "Logg ut" }, // Placeholder for logout
   ]
 
   const isActive = (href: string) => pathname === href
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Dumbbell className="h-6 w-6 text-blue-600" />
-          <span className="text-xl font-bold text-blue-700">Treningsglede AS</span>
+          <Dumbbell className="h-6 w-6 text-primary-600" />
+          <span className="text-xl font-bold text-primary-700">Treningsglede AS</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -35,8 +33,8 @@ export default function Navigation() {
             <Link
               key={item.href}
               href={item.href}
-              className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                isActive(item.href) ? "text-blue-600" : "text-gray-700"
+              className={`text-sm font-medium transition-colors hover:text-primary-600 ${
+                isActive(item.href) ? "text-primary-600" : "text-gray-700"
               }`}
             >
               {item.label}
@@ -45,8 +43,14 @@ export default function Navigation() {
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
+          <Link href="/login">
+            <Button variant="outline" size="sm">
+              <User className="h-4 w-4 mr-2" />
+              Logg inn
+            </Button>
+          </Link>
           <Link href="/sessions">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <Button size="sm" className="bg-primary-600 hover:bg-primary-700">
               Book økt
             </Button>
           </Link>
@@ -67,16 +71,22 @@ export default function Navigation() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`text-lg font-medium transition-colors hover:text-blue-600 ${
-                    isActive(item.href) ? "text-blue-600" : "text-gray-700"
+                  className={`text-lg font-medium transition-colors hover:text-primary-600 ${
+                    isActive(item.href) ? "text-primary-600" : "text-gray-700"
                   }`}
                 >
                   {item.label}
                 </Link>
               ))}
               <div className="pt-4 space-y-2">
+                <Link href="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    <User className="h-4 w-4 mr-2" />
+                    Logg inn
+                  </Button>
+                </Link>
                 <Link href="/sessions" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">Book økt</Button>
+                  <Button className="w-full bg-primary-600 hover:bg-primary-700">Book økt</Button>
                 </Link>
               </div>
             </div>

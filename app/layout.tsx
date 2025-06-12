@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Treningsglede AS - Din Partner for Aktiv Livsstil",
   description:
     "Treningsglede AS tilbyr inspirerende treningsøkter både innendørs og utendørs. Bli med i vårt inkluderende fellesskap og opplev gleden ved å være aktiv.",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -17,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-      <html lang="no">
-        <body className={inter.className}>{children}</body>
-      </html>
+    <html lang="no">
+      <body className={inter.className}>{children}</body>
+    </html>
   )
 }
