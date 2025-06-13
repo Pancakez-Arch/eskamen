@@ -20,20 +20,22 @@ import Footer from "@/components/footer"
 import { Input } from "@/components/ui/input"
 
 interface Session {
-  id: number
-  title: string
-  instructor: string
-  instructorRole: string
-  type: "indoor" | "outdoor"
-  date: string
-  startTime: string
-  endTime: string
-  location: string
-  maxParticipants: number
-  currentParticipants: number
-  difficulty: string
-  description: string
-  price: number
+  id: number | string;
+  title: string;
+  instructor: string;
+  instructorRole: string;
+  type: "indoor" | "outdoor";
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  lat?: number;
+  lon?: number;
+  maxParticipants: number;
+  currentParticipants: number;
+  difficulty: string;
+  description: string;
+  price: number;
 }
 
 export default function SessionsPage() {
@@ -46,9 +48,10 @@ export default function SessionsPage() {
     phone: "",
     notes: "",
   })
+  const [weather, setWeather] = useState<{ [id: string]: number }>({})
 
   useEffect(() => {
-    fetchSessions()
+    fetchSessions();
   }, [])
 
   const fetchSessions = async () => {
@@ -87,21 +90,28 @@ export default function SessionsPage() {
       return
     }
 
-    // Simuler booking (i ekte app ville dette sendt til backend)
-    alert(`Booking bekreftet for "${selectedSession.title}"!\n\nDetaljer:\nNavn: ${bookingForm.name}\nE-post: ${bookingForm.email}\nTelefon: ${bookingForm.phone}\n\nDu vil motta en bekreftelse på e-post.`)
-    
+    // Oppdater antall påmeldte i Firestore
+    try {
+      const response = await fetch(`/api/sessions/${selectedSession.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ increment: 1 })
+      });
+      if (response.ok) {
+        alert(`Booking bekreftet for "${selectedSession.title}"!\n\nDetaljer:\nNavn: ${bookingForm.name}\nE-post: ${bookingForm.email}\nTelefon: ${bookingForm.phone}\n\nDu vil motta en bekreftelse på e-post.`)
+        fetchSessions(); // Oppdater listen
+      } else {
+        alert("Kunne ikke oppdatere booking. Prøv igjen senere.");
+      }
+    } catch (error) {
+      alert("Noe gikk galt. Prøv igjen senere.");
+    }
     setSelectedSession(null)
     setBookingForm({ name: "", email: "", phone: "", notes: "" })
-    
-    // Oppdater deltakerantall lokalt
-    setSessions(sessions.map(s => 
-      s.id === selectedSession.id 
-        ? { ...s, currentParticipants: s.currentParticipants + 1 }
-        : s
-    ))
   }
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: string | undefined) => {
+    if (!difficulty) return "bg-blue-100 text-blue-800";
     switch (difficulty.toLowerCase()) {
       case "beginner":
         return "bg-green-100 text-green-800"
@@ -118,8 +128,49 @@ export default function SessionsPage() {
     return session.maxParticipants - session.currentParticipants
   }
 
-  const formatTime = (timeString: string) => {
-    return timeString.slice(0, 5)
+  const formatTime = (timeString: string | { seconds: number } | undefined) => {
+    if (!timeString) return "";
+    if (typeof timeString === "object" && 'seconds' in timeString) {
+      // Firestore timestamp
+      return new Date(timeString.seconds * 1000).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+    }
+    if (typeof timeString === "string") {
+      return timeString.slice(0, 5);
+    }
+    return "";
+  }
+
+  // Hjelpefunksjon for å hente vær fra Yr.no (Oslo som eksempel)
+  async function fetchWeather(lat: number, lon: number) {
+    const res = await fetch(
+      `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`,
+      {
+        headers: {
+          'User-Agent': 'treningsglede-frontend/1.0 github.com/dinbruker',
+        },
+      }
+    );
+    const data = await res.json();
+    const temp = data.properties.timeseries[0].data.instant.details.air_temperature;
+    return temp;
+  }
+
+  useEffect(() => {
+    sessions.forEach(async (session) => {
+      if (session.type === "outdoor" && !weather[session.id] && session.lat && session.lon) {
+        const temp = await fetchWeather(session.lat, session.lon);
+        setWeather(w => ({ ...w, [session.id]: temp }));
+      }
+    });
+    // eslint-disable-next-line
+  }, [sessions]);
+
+  function getWeather(session: Session) {
+    if (session.type === "outdoor") {
+      const temp = weather[session.id];
+      return temp !== undefined ? `${temp}°C` : "Laster...";
+    }
+    return null;
   }
 
   if (loading) {
@@ -176,13 +227,20 @@ export default function SessionsPage() {
                         ) : (
                           <Home className="h-5 w-5 text-blue-600" />
                         )}
-                        <Badge className={getDifficultyColor(session.difficulty)}>{session.difficulty}</Badge>
+                        <Badge className={getDifficultyColor(session.difficulty)}>{session.difficulty || "Ukjent"}</Badge>
                       </div>
                     </div>
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600">{session.description}</p>
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      {session.description}
+                      {getWeather(session) && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">
+                          {getWeather(session)}
+                        </span>
+                      )}
+                    </p>
 
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center space-x-2">

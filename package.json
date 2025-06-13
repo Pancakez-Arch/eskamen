@@ -18,11 +18,13 @@
     "class-variance-authority": "^0.7.1",
     "clerk": "^0.8.3",
     "clsx": "^2.1.1",
+    "firebase": "^11.9.1",
     "lucide-react": "^0.514.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.14.1",
     "mysql2-promise": "^0.1.4",
     "next": "15.3.3",
+    "next-auth": "^4.24.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.3.1"
