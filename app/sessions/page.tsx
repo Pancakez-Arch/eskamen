@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,10 +12,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Clock, MapPin, Users, Star, TreePine, Home } from 'lucide-react'
-import Navigation from "@/components/navgiation"
+import { Calendar, Clock, MapPin, Users, Star, TreePine, Home } from "lucide-react"
+import Navigation from "@/components/navigation"
 import Footer from "@/components/footer"
 import { Input } from "@/components/ui/input"
 
@@ -39,9 +40,8 @@ interface Session {
 }
 
 export default function SessionsPage() {
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [selectedSession, setSelectedSession] = useState<(typeof sessions)[0] | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false) // Mock login state
   const [bookingForm, setBookingForm] = useState({
     name: "",
     email: "",
@@ -72,21 +72,9 @@ export default function SessionsPage() {
     setSelectedSession(session)
   }
 
-  const handleWaitlist = async (session: Session) => {
-    const name = prompt("Skriv inn ditt navn for ventelisten:")
-    const email = prompt("Skriv inn din e-post:")
-    
-    if (name && email) {
-      alert(`${name} er nå på ventelisten for "${session.title}". Vi sender deg en e-post til ${email} hvis det blir ledig plass.`)
-    }
-  }
-
-  const submitBooking = async () => {
-    if (!selectedSession) return
-
-    // Validering
-    if (!bookingForm.name || !bookingForm.email || !bookingForm.phone) {
-      alert("Vennligst fyll ut alle obligatoriske felt")
+  const handleWaitlist = (session: (typeof sessions)[0]) => {
+    if (!isLoggedIn) {
+      alert("Vennligst logg inn for å bli med på ventelisten")
       return
     }
 
@@ -124,7 +112,7 @@ export default function SessionsPage() {
     }
   }
 
-  const spotsLeft = (session: Session) => {
+  const spotsLeft = (session: (typeof sessions)[0]) => {
     return session.maxParticipants - session.currentParticipants
   }
 
@@ -190,17 +178,25 @@ export default function SessionsPage() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
-        <div className="container mx-auto px-4 text-center space-y-6">
+      <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-20">
+        <div className="container text-center space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold">Treningsøkter</h1>
-          <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+          <p className="text-xl text-primary-100 max-w-3xl mx-auto">
             Utforsk vårt varierte utvalg av treningsøkter. Fra rolig yoga til intensiv HIIT - vi har noe for alle
             treningsnivåer og preferanser.
           </p>
-          <div className="bg-blue-700/50 rounded-lg p-4 max-w-md mx-auto">
-            <p className="text-purple-300 mb-2">✨ Book direkte uten å opprette konto</p>
-            <p className="text-sm text-blue-200">Enkelt og raskt - bare fyll ut dine kontaktopplysninger</p>
-          </div>
+          {!isLoggedIn && (
+            <div className="bg-primary-700/50 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-primary-100 mb-2">💡 Tips: Logg inn for å booke økter</p>
+              <Button
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-primary-700"
+                onClick={() => setIsLoggedIn(true)}
+              >
+                Logg inn (Demo)
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -242,153 +238,142 @@ export default function SessionsPage() {
                       )}
                     </p>
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        <span>{new Date(session.date).toLocaleDateString("no-NO")}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <span>
-                          {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span>{session.location}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-gray-500" />
-                        <span>
-                          {session.currentParticipants}/{session.maxParticipants} deltakere
-                        </span>
-                      </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span>{new Date(session.date).toLocaleDateString("no-NO")}</span>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      <span>{session.time}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <span>{session.location}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-4 w-4 text-gray-500" />
+                      <span>
+                        {session.currentParticipants}/{session.maxParticipants} deltakere
+                      </span>
+                    </div>
+                  </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <span className="text-lg font-bold text-blue-600">{session.price} kr</span>
-                      <div className="space-x-2">
-                        {spotsLeft(session) > 0 ? (
-                          <>
-                            <Badge variant="outline" className="text-green-600 border-green-600">
-                              {spotsLeft(session)} plasser igjen
-                            </Badge>
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  className="bg-blue-600 hover:bg-blue-700"
-                                  onClick={() => handleBooking(session)}
-                                >
-                                  Book nå
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="sm:max-w-md">
-                                <DialogHeader>
-                                  <DialogTitle>Book {selectedSession?.title}</DialogTitle>
-                                  <DialogDescription>
-                                    Fyll ut informasjonen under for å booke {selectedSession?.title} den{" "}
-                                    {selectedSession && new Date(selectedSession.date).toLocaleDateString("no-NO")}{" "}
-                                    kl. {selectedSession && formatTime(selectedSession.startTime)}.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div className="space-y-2">
-                                    <Label htmlFor="name">Navn *</Label>
-                                    <Input
-                                      id="name"
-                                      value={bookingForm.name}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
-                                      placeholder="Ditt fulle navn"
-                                      required
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="email">E-post *</Label>
-                                    <Input
-                                      id="email"
-                                      type="email"
-                                      value={bookingForm.email}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
-                                      placeholder="din@epost.no"
-                                      required
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="phone">Telefon *</Label>
-                                    <Input
-                                      id="phone"
-                                      value={bookingForm.phone}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
-                                      placeholder="+47 123 45 678"
-                                      required
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="notes">Kommentarer (valgfritt)</Label>
-                                    <Textarea
-                                      id="notes"
-                                      value={bookingForm.notes}
-                                      onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                                      placeholder="Spesielle behov eller kommentarer..."
-                                    />
-                                  </div>
-                                  <Button
-                                    onClick={submitBooking}
-                                    className="w-full bg-blue-600 hover:bg-blue-700"
-                                  >
-                                    Bekreft booking
-                                  </Button>
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <span className="text-lg font-bold text-primary-600">{session.price}</span>
+                    <div className="space-x-2">
+                      {spotsLeft(session) > 0 ? (
+                        <>
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            {spotsLeft(session)} plasser igjen
+                          </Badge>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                className="bg-primary-600 hover:bg-primary-700"
+                                onClick={() => handleBooking(session)}
+                              >
+                                Book nå
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Book {selectedSession?.title}</DialogTitle>
+                                <DialogDescription>
+                                  Fyll ut informasjonen under for å bekrefte din booking.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="name">Navn</Label>
+                                  <Input
+                                    id="name"
+                                    value={bookingForm.name}
+                                    onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
+                                    placeholder="Ditt fulle navn"
+                                  />
                                 </div>
-                              </DialogContent>
-                            </Dialog>
-                          </>
-                        ) : (
-                          <>
-                            <Badge variant="outline" className="text-red-600 border-red-600">
-                              Fullt
-                            </Badge>
-                            <Button size="sm" variant="outline" onClick={() => handleWaitlist(session)}>
-                              Venteliste
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="email">E-post</Label>
+                                  <Input
+                                    id="email"
+                                    type="email"
+                                    value={bookingForm.email}
+                                    onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                                    placeholder="din@epost.no"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="phone">Telefon</Label>
+                                  <Input
+                                    id="phone"
+                                    value={bookingForm.phone}
+                                    onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                                    placeholder="+47 123 45 678"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="notes">Kommentarer (valgfritt)</Label>
+                                  <Textarea
+                                    id="notes"
+                                    value={bookingForm.notes}
+                                    onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                                    placeholder="Spesielle behov eller kommentarer..."
+                                  />
+                                </div>
+                                <Button onClick={submitBooking} className="w-full bg-primary-600 hover:bg-primary-700">
+                                  Bekreft booking
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </>
+                      ) : (
+                        <>
+                          <Badge variant="outline" className="text-red-600 border-red-600">
+                            Fullt
+                          </Badge>
+                          <Button size="sm" variant="outline" onClick={() => handleWaitlist(session)}>
+                            Venteliste
+                          </Button>
+                        </>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Info Section */}
-      <section className="py-20 bg-blue-50">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-primary-50">
+        <div className="container">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <h2 className="text-3xl font-bold text-gray-900">Booking Informasjon</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="space-y-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center mx-auto">
                   <Star className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold">Enkel Booking</h3>
-                <p className="text-gray-600 text-sm">Ingen konto nødvendig - book direkte med dine kontaktopplysninger</p>
+                <h3 className="text-lg font-semibold">Avbestilling</h3>
+                <p className="text-gray-600 text-sm">Gratis avbestilling frem til 2 timer før øktstart</p>
               </div>
               <div className="space-y-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center mx-auto">
                   <Users className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold">Bekreftelse</h3>
-                <p className="text-gray-600 text-sm">Du får bekreftelse på e-post umiddelbart etter booking</p>
+                <h3 className="text-lg font-semibold">Venteliste</h3>
+                <p className="text-gray-600 text-sm">Automatisk varsling hvis det blir ledig plass</p>
               </div>
               <div className="space-y-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center mx-auto">
                   <Calendar className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold">Fleksibilitet</h3>
-                <p className="text-gray-600 text-sm">Kontakt oss for endringer eller avbestillinger</p>
+                <p className="text-gray-600 text-sm">Book enkeltøkter eller kjøp månedskort</p>
               </div>
             </div>
           </div>
