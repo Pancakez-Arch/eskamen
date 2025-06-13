@@ -40,12 +40,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get next position in waitlist
-    const lastPosition = await queryRow<{ max_position: number | null }>(
-      "SELECT MAX(position) as max_position FROM waitlist WHERE session_id = ?",
-      [sessionId],
-    )
+    const lastPosition = await queryRow("SELECT MAX(position) as max_position FROM waitlist WHERE session_id = ?", [
+      sessionId,
+    ])
 
-    const nextPosition = ((lastPosition?.max_position ?? 0) as number) + 1
+    const nextPosition = (lastPosition?.max_position || 0) + 1
 
     // Add to waitlist
     await executeQuery("INSERT INTO waitlist (clerk_user_id, session_id, position) VALUES (?, ?, ?)", [

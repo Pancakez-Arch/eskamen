@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAuth } from "@clerk/nextjs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge, Calendar, Clock, MapPin } from "lucide-react"
 import Footer from "@/components/footer"
 import Navigation from "@/components/navgiation"
-import { useAuth } from "@clerk/nextjs"
 
 interface Booking {
   id: number
