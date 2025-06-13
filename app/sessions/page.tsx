@@ -18,93 +18,26 @@ import { Textarea } from "@/components/ui/textarea"
 import { Calendar, Clock, MapPin, Users, Star, TreePine, Home } from "lucide-react"
 import Navigation from "@/components/navigation"
 import Footer from "@/components/footer"
+import { Input } from "@/components/ui/input"
 
-const sessions = [
-  {
-    id: 1,
-    title: "Morgen Yoga",
-    instructor: "Sofia Johannessen",
-    type: "indoor",
-    date: "2024-12-11",
-    time: "07:00 - 08:00",
-    location: "Studio 1",
-    maxParticipants: 12,
-    currentParticipants: 8,
-    difficulty: "Beginner",
-    description: "Start dagen med rolig yoga og mindfulness. Perfekt for alle nivåer.",
-    price: "250 kr",
-  },
-  {
-    id: 2,
-    title: "HIIT Utendørs",
-    instructor: "Marcus Andersen",
-    type: "outdoor",
-    date: "2024-12-11",
-    time: "17:00 - 18:00",
-    location: "Frognerparken",
-    maxParticipants: 10,
-    currentParticipants: 10,
-    difficulty: "Intermediate",
-    description: "Intensiv utendørs trening med fokus på kondisjon og styrke.",
-    price: "300 kr",
-  },
-  {
-    id: 3,
-    title: "Styrketrening for Nybegynnere",
-    instructor: "Oliver Hansen",
-    type: "indoor",
-    date: "2024-12-11",
-    time: "18:30 - 19:30",
-    location: "Treningssalen",
-    maxParticipants: 8,
-    currentParticipants: 5,
-    difficulty: "Beginner",
-    description: "Lær grunnleggende styrkeøvelser i et trygt og støttende miljø.",
-    price: "350 kr",
-  },
-  {
-    id: 4,
-    title: "Dans & Kondisjon",
-    instructor: "Ingrid Svendsen",
-    type: "indoor",
-    date: "2024-12-12",
-    time: "19:00 - 20:00",
-    location: "Studio 2",
-    maxParticipants: 15,
-    currentParticipants: 12,
-    difficulty: "All levels",
-    description: "Morsomme danseøvelser kombinert med kondisjonstrening.",
-    price: "280 kr",
-  },
-  {
-    id: 5,
-    title: "Naturløp & Mindfulness",
-    instructor: "Marcus Andersen",
-    type: "outdoor",
-    date: "2024-12-12",
-    time: "08:00 - 09:30",
-    location: "Nordmarka",
-    maxParticipants: 12,
-    currentParticipants: 7,
-    difficulty: "Intermediate",
-    description: "Kombinasjon av løping i naturen og mindfulness-øvelser.",
-    price: "320 kr",
-  },
-  {
-    id: 6,
-    title: "Personlig Trening",
-    instructor: "Emma Larsen",
-    type: "indoor",
-    date: "2024-12-12",
-    time: "16:00 - 17:00",
-    location: "Privat studio",
-    maxParticipants: 1,
-    currentParticipants: 0,
-    difficulty: "All levels",
-    description: "Skreddersydd treningsøkt tilpasset dine individuelle mål.",
-    price: "800 kr",
-  },
-]
+interface Session {
+  id: number | string;
+  title: string;
+  instructor: string;
+  instructorRole: string;
+  type: "indoor" | "outdoor";
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  lat?: number;
+  lon?: number;
+  maxParticipants: number;
+  currentParticipants: number;
+  difficulty: string;
+  description: string;
+  price: number;
+}
 
 export default function SessionsPage() {
   const [selectedSession, setSelectedSession] = useState<(typeof sessions)[0] | null>(null)
@@ -115,12 +48,27 @@ export default function SessionsPage() {
     phone: "",
     notes: "",
   })
+  const [weather, setWeather] = useState<{ [id: string]: number }>({})
 
-  const handleBooking = (session: (typeof sessions)[0]) => {
-    if (!isLoggedIn) {
-      alert("Vennligst logg inn for å booke en økt")
-      return
+  useEffect(() => {
+    fetchSessions();
+  }, [])
+
+  const fetchSessions = async () => {
+    try {
+      const response = await fetch("/api/sessions")
+      if (response.ok) {
+        const data = await response.json()
+        setSessions(data)
+      }
+    } catch (error) {
+      console.error("Error fetching sessions:", error)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const handleBooking = (session: Session) => {
     setSelectedSession(session)
   }
 
@@ -129,16 +77,29 @@ export default function SessionsPage() {
       alert("Vennligst logg inn for å bli med på ventelisten")
       return
     }
-    alert(`Du er nå på ventelisten for "${session.title}"`)
-  }
 
-  const submitBooking = () => {
-    alert(`Booking bekreftet for "${selectedSession?.title}"!`)
+    // Oppdater antall påmeldte i Firestore
+    try {
+      const response = await fetch(`/api/sessions/${selectedSession.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ increment: 1 })
+      });
+      if (response.ok) {
+        alert(`Booking bekreftet for "${selectedSession.title}"!\n\nDetaljer:\nNavn: ${bookingForm.name}\nE-post: ${bookingForm.email}\nTelefon: ${bookingForm.phone}\n\nDu vil motta en bekreftelse på e-post.`)
+        fetchSessions(); // Oppdater listen
+      } else {
+        alert("Kunne ikke oppdatere booking. Prøv igjen senere.");
+      }
+    } catch (error) {
+      alert("Noe gikk galt. Prøv igjen senere.");
+    }
     setSelectedSession(null)
     setBookingForm({ name: "", email: "", phone: "", notes: "" })
   }
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: string | undefined) => {
+    if (!difficulty) return "bg-blue-100 text-blue-800";
     switch (difficulty.toLowerCase()) {
       case "beginner":
         return "bg-green-100 text-green-800"
@@ -153,6 +114,63 @@ export default function SessionsPage() {
 
   const spotsLeft = (session: (typeof sessions)[0]) => {
     return session.maxParticipants - session.currentParticipants
+  }
+
+  const formatTime = (timeString: string | { seconds: number } | undefined) => {
+    if (!timeString) return "";
+    if (typeof timeString === "object" && 'seconds' in timeString) {
+      // Firestore timestamp
+      return new Date(timeString.seconds * 1000).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+    }
+    if (typeof timeString === "string") {
+      return timeString.slice(0, 5);
+    }
+    return "";
+  }
+
+  // Hjelpefunksjon for å hente vær fra Yr.no (Oslo som eksempel)
+  async function fetchWeather(lat: number, lon: number) {
+    const res = await fetch(
+      `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`,
+      {
+        headers: {
+          'User-Agent': 'treningsglede-frontend/1.0 github.com/dinbruker',
+        },
+      }
+    );
+    const data = await res.json();
+    const temp = data.properties.timeseries[0].data.instant.details.air_temperature;
+    return temp;
+  }
+
+  useEffect(() => {
+    sessions.forEach(async (session) => {
+      if (session.type === "outdoor" && !weather[session.id] && session.lat && session.lon) {
+        const temp = await fetchWeather(session.lat, session.lon);
+        setWeather(w => ({ ...w, [session.id]: temp }));
+      }
+    });
+    // eslint-disable-next-line
+  }, [sessions]);
+
+  function getWeather(session: Session) {
+    if (session.type === "outdoor") {
+      const temp = weather[session.id];
+      return temp !== undefined ? `${temp}°C` : "Laster...";
+    }
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <Navigation />
+        <div className="container py-20 text-center">
+          <p>Laster treningsøkter...</p>
+        </div>
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -184,29 +202,41 @@ export default function SessionsPage() {
 
       {/* Sessions Grid */}
       <section className="py-20 bg-white">
-        <div className="container">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sessions.map((session) => (
-              <Card key={session.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <CardTitle className="text-lg">{session.title}</CardTitle>
-                      <p className="text-sm text-gray-600">med {session.instructor}</p>
+        <div className="container mx-auto px-4">
+          {sessions.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Ingen treningsøkter tilgjengelig for øyeblikket.</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sessions.map((session) => (
+                <Card key={session.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                        <CardTitle className="text-lg">{session.title}</CardTitle>
+                        <p className="text-sm text-gray-600">med {session.instructor}</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {session.type === "outdoor" ? (
+                          <TreePine className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <Home className="h-5 w-5 text-blue-600" />
+                        )}
+                        <Badge className={getDifficultyColor(session.difficulty)}>{session.difficulty || "Ukjent"}</Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {session.type === "outdoor" ? (
-                        <TreePine className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <Home className="h-5 w-5 text-primary-600" />
-                      )}
-                      <Badge className={getDifficultyColor(session.difficulty)}>{session.difficulty}</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
+                  </CardHeader>
 
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-gray-600">{session.description}</p>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      {session.description}
+                      {getWeather(session) && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">
+                          {getWeather(session)}
+                        </span>
+                      )}
+                    </p>
 
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center space-x-2">

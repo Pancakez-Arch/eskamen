@@ -45,6 +45,18 @@
     "bcryptjs": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+<<<<<<< HEAD
+    "firebase": "^11.9.1",
+    "lucide-react": "^0.514.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.14.1",
+    "mysql2-promise": "^0.1.4",
+    "next": "15.3.3",
+    "next-auth": "^4.24.11",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.3.1"
+=======
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
@@ -65,6 +77,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
     "zod": "^3.24.1"
+>>>>>>> 6f6226929a9f7fe9fa60fecfc28790be6c60b605
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
